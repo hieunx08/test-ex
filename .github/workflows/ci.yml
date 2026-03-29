@@ -11,26 +11,31 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # LƯU Ý: Đã xóa bản 0.12 vì pnpm hiện đại không hỗ trợ bản Node cổ này
         node-version: [18, 20, 22]
 
     steps:
+      # Step 1: Checkout code
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v3
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-
-      - name: Install Node.js
-        uses: actions/setup-node@v6
+      # Step 2: Setup Node.js (dùng matrix)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version-file: '.node-version'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Install deps
-        run: pnpm install
+      # Step 3: Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8   # version pnpm muốn dùng
 
-      # BƯỚC 4: Chạy Tests
+      # Step 4: Cài dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Step 5: Chạy tests
       - name: Run tests
         run: pnpm run test
