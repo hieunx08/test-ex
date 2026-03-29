@@ -1,41 +1,29 @@
 name: CI
-
-on:
-  push:
-    branches: ['main', 'dev']
-  pull_request:
-    branches: ['main']
+on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18, 20, 22]
-
     steps:
-      # Step 1: Checkout code
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Setup Node.js (dùng matrix)
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4 # Use the latest version
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          version: 9 # Specify pnpm version or let it read from packageManager field
+          run_install: false # Set to true to automate install, or false to do it manually
 
-      # Step 3: Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          version: 8   # version pnpm muốn dùng
+          node-version: 20
+          cache: 'pnpm' # Built-in caching for pnpm dependencies
 
-      # Step 4: Cài dependencies
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile # Ensures lockfile is not updated in CI
 
-      # Step 5: Chạy tests
-      - name: Run tests
-        run: pnpm run test
+      - name: Run CI tasks
+        run: |
+          pnpm run test
+          pnpm run build
